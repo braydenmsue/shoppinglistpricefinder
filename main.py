@@ -5,10 +5,8 @@ import priceHandler as ph
 def main():
 
     slh = lh.ShoppingListHandler()
-
     pf = ph.PriceFinder('untitled.csv')
-    data = pf.gather_items_data()
-    print(data)
+
 
 
     # groceries = slh.get_list('untitled.csv')
@@ -21,6 +19,9 @@ def main():
     print("\n--------------------------------------\nDEBUG:\n")
     print("SLHandler:\n "
           "rootdir:", slh.cwd, "\n lists:", slh.lists, "\n num_lists:", slh.num_lists)
+
+    print("priceHandler:\n "
+          "data:", pf.display())
 
 
 if __name__ == '__main__':
