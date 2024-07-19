@@ -5,14 +5,14 @@ import priceHandler as ph
 def main():
 
     slh = lh.ShoppingListHandler()
-    pf = ph.PriceFinder('untitled.csv')
-    pf.gather_items_data()
-    # slh.create_list()
-    # slh.create_list()
-    # slh.create_list()
 
-    # groceries = slh.get_list('untitled')
-    # groceries.add_item('bread', 500)
+    pf = ph.PriceFinder('untitled.csv')
+    data = pf.gather_items_data()
+    print(data)
+
+
+    # groceries = slh.get_list('untitled.csv')
+    # groceries.add_item('ham', 300)
     # groceries.remove_item('bread')
     # groceries.display()
     # groceries.save()
