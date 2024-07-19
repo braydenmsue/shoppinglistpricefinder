@@ -43,6 +43,8 @@ def to_grams(amount: str):
     patterns = {
         'kg': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*kg', re.IGNORECASE),
         'g': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*g', re.IGNORECASE),
+        'lb': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*lb', re.IGNORECASE),
+        # TODO: add volume units
     }
 
     # Check and convert the input string
@@ -56,8 +58,8 @@ def to_grams(amount: str):
                 return quantity * value * 1000
             elif unit == 'g':
                 return quantity * value
-            elif unit == 'ct':
-                return quantity * value * 0.2
+            elif unit == 'lb':
+                return quantity * value * 453.592
 
 
 class PriceFinder:
