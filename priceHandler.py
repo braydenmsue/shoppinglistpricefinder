@@ -5,6 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+
 import pandas as pd
 import re
 import time
@@ -28,12 +30,16 @@ def get_driver():
 
 
 # take list of 3 spans containing price and returns float
-# e.g. [<span>$</span>, <span>5</span>, <span>25</span> -> '5.25'
+#   e.g. [<span>$</span>, <span>5</span>, <span>25</span> -> '5.25'
+# OR a 1-string list like ['$12.34'] and returns float --> 12.34
 def format_price(price_chars: list):
-    return float(price_chars[1].text + '.' + price_chars[2].text)
+    if len(price_chars) == 1:
+        return float(price_chars[0][1:])
+    else:
+        return float(price_chars[1].text + '.' + price_chars[2].text)
 
 def to_grams(amount: str):
-    # Regex patterns to match different formats
+    # Regex patterns to match 'A x B kg' or 'A x B g'
     patterns = {
         'kg': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*kg', re.IGNORECASE),
         'g': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*g', re.IGNORECASE),
@@ -58,7 +64,10 @@ class PriceFinder:
     def __init__(self, filename: str):
         self.slh = lh.ShoppingListHandler()
         self.list = self.slh.get_list(filename)
-        self.items = {}
+        self.data = self.gather_items_data()
+
+    def display(self):
+        print(self.data)
 
     def gather_items_data(self):
         driver = get_driver()
@@ -88,6 +97,8 @@ class PriceFinder:
                     name_xpath = './/div[@class="e-i41pyq"]//h2[@class="e-147kl2c"]'
                     price_div_xpath = './/span[@class="e-1ip314g"]'
                     amount_xpath = './/div[@class="e-zjik7"]//div'
+                    full_price_xpath = './/p[@class="e-vn9fl5"]//span[@class="e-azp9o7"]'   # for items on sale
+
                     name = item.find_element(By.XPATH, name_xpath).text
                     #TODO: add synonyms for each item e.g. bread -> bun(s), sourdough, baguette
                     if row['name'].lower() in name.lower():
@@ -98,14 +109,22 @@ class PriceFinder:
                         price = format_price(price_digits)
 
                         try:
+                            full_price_digits = item.find_element(By.XPATH, full_price_xpath).text
+                            full_price = format_price([full_price_digits])
+                        except NoSuchElementException:
+                            full_price = price
+
+                        try:
                             amount_str = item.find_element(By.XPATH, amount_xpath).text
                             amount = to_grams(amount_str)
-                        except:
+                        except NoSuchElementException:
                             amount = None
 
-                        record = [name, price, amount]
+                        discount = full_price - price
+
+                        record = [name, price, amount, discount]
                         data.append(record)
 
-            result = pd.DataFrame(data, columns=['name', 'price', 'amount'])
+            result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'discount'])
 
         return result
