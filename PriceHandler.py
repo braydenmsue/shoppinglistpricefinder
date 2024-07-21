@@ -38,28 +38,47 @@ def format_price(price_chars: list):
     else:
         return float(price_chars[1].text + '.' + price_chars[2].text)
 
-def to_grams(amount: str):
+
+def to_amount(amount: str):
     # Regex patterns to match 'A x B kg' or 'A x B g'
     patterns = {
         'kg': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*kg', re.IGNORECASE),
         'g': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*g', re.IGNORECASE),
         'lb': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*lb', re.IGNORECASE),
-        # TODO: add volume units
+        'oz': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*oz', re.IGNORECASE),
+        'ml': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*ml', re.IGNORECASE),
+        'l': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*l', re.IGNORECASE)
     }
 
     # Check and convert the input string
     for unit, pattern in patterns.items():
         match = pattern.match(amount)
+        result = None
         if match:
             quantity = float(match.group(1)) if match.group(1) else 1
             value = float(match.group(2)) if match.group(2) else 1
 
+            # Convert mass to grams and volume to milliliters
             if unit == 'kg':
-                return quantity * value * 1000
+                result = quantity * value * 1000
+                unit = 'g'
             elif unit == 'g':
-                return quantity * value
+                result = quantity * value
             elif unit == 'lb':
-                return quantity * value * 453.592
+                result = quantity * value * 453.592
+                unit = 'g'
+            elif unit == 'oz':
+                result = quantity * value * 28.3495
+                unit = 'g'
+            elif unit == 'ml':
+                result = quantity * value
+            elif unit == 'l':
+                result = quantity * value * 1000
+                unit = 'ml'
+
+            return result, unit
+
+    return None, None
 
 
 class PriceFinder:
@@ -67,9 +86,6 @@ class PriceFinder:
         self.slh = lh.ShoppingListHandler()
         self.list = self.slh.get_list(filename)
         self.data = self.gather_items_data()
-
-    def display(self):
-        print(self.data)
 
     def gather_items_data(self):
         driver = get_driver()
@@ -90,7 +106,7 @@ class PriceFinder:
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, list_container_xpath)))
             list_containers = driver.find_elements(By.XPATH, list_container_xpath)
 
-            df = pd.DataFrame(columns=['name', 'price', 'amount'])
+            df = pd.DataFrame(columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term'])
 
             for item_list in list_containers:
                 items_xpath = './/li//div[@class="e-13udsys"]'
@@ -118,15 +134,17 @@ class PriceFinder:
 
                         try:
                             amount_str = item.find_element(By.XPATH, amount_xpath).text
-                            amount = to_grams(amount_str)
+                            amount, unit = to_amount(amount_str)
+
                         except NoSuchElementException:
                             amount = None
 
                         discount = full_price - price
 
-                        record = [name, price, amount, discount]
+                        record = [name, price, amount, unit, discount, row['name']]
                         data.append(record)
 
-            result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'discount'])
+            result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term'])
 
+        driver.quit()
         return result
