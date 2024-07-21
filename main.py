@@ -1,11 +1,13 @@
-import listHandler as lh
-import priceHandler as ph
+from ListHandler import ShoppingListHandler
+from PriceHandler import PriceHandler
+from AnalysisHandler import AnalysisHandler
 
 
 def main():
 
-    slh = lh.ShoppingListHandler()
-    pf = ph.PriceFinder('untitled.csv')
+    slh = ShoppingListHandler()
+    prices = PriceHandler('untitled.csv')
+    analysis = AnalysisHandler(prices.data)
 
 
 
@@ -20,8 +22,11 @@ def main():
     print("SLHandler:\n "
           "rootdir:", slh.cwd, "\n lists:", slh.lists, "\n num_lists:", slh.num_lists)
 
-    print("priceHandler:\n "
-          "data:", pf.display())
+    print("PriceHandler:\n "
+          "data:", prices.data)
+
+    print("AnalysisHandler:\n "
+          "data:", analysis.data)
 
 
 if __name__ == '__main__':
