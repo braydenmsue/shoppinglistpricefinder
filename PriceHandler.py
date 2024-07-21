@@ -1,4 +1,4 @@
-import listHandler as lh
+import ListHandler as lh
 from selenium import webdriver
 import chromedriver_autoinstaller
 from selenium.webdriver.common.by import By
@@ -81,7 +81,7 @@ def to_amount(amount: str):
     return None, None
 
 
-class PriceFinder:
+class PriceHandler:
     def __init__(self, filename: str):
         self.slh = lh.ShoppingListHandler()
         self.list = self.slh.get_list(filename)
