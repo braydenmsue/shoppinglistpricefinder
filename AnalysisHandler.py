@@ -1,8 +1,11 @@
 import pandas as pd
+import ListHandler as lH
+
 
 class AnalysisHandler:
-    def __init__(self, df: pd.DataFrame):
-        self.data = df
+    def __init__(self, data: pd.DataFrame, shopping_list: pd.DataFrame):
+        self.data = data
+        self.shopping_list = shopping_list
         self.clean_data()
 
     def clean_data(self):

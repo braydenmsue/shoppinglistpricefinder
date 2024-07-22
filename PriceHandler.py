@@ -1,4 +1,4 @@
-import ListHandler as lh
+import ListHandler as lH
 from selenium import webdriver
 import chromedriver_autoinstaller
 from selenium.webdriver.common.by import By
@@ -17,6 +17,7 @@ WEBSITE = 'https://sameday.costco.ca/store/costco-canada/storefront'
 
 
 def get_driver():
+    # TODO: test chrome vs firefox
     chromedriver_autoinstaller.install()
 
     # for testing; keeps window open after script finishes
@@ -41,6 +42,7 @@ def format_price(price_chars: list):
 
 def to_amount(amount: str):
     # Regex patterns to match 'A x B kg' or 'A x B g'
+    # TODO: somehow make requested unit more robust e.g. 500 ml of bread not allowed
     patterns = {
         'kg': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*kg', re.IGNORECASE),
         'g': re.compile(r'(\d+\.?\d*)\s*(?:x\s*(\d+\.?\d*))?\s*g', re.IGNORECASE),
@@ -82,9 +84,9 @@ def to_amount(amount: str):
 
 
 class PriceHandler:
-    def __init__(self, filename: str):
-        self.slh = lh.ShoppingListHandler()
-        self.list = self.slh.get_list(filename)
+    def __init__(self, shopping_list: lH.ShoppingList):
+        self.slh = lH.ShoppingListHandler()
+        self.list = self.slh.get_list(shopping_list.filename)
         self.data = self.gather_items_data()
 
     def gather_items_data(self):
