@@ -6,13 +6,14 @@ from AnalysisHandler import AnalysisHandler
 def main():
 
     slh = ShoppingListHandler()
-    prices = PriceHandler('untitled.csv')
-    analysis = AnalysisHandler(prices.data)
+    # groceries = slh.create_list()
+    groceries = slh.get_list('untitled.csv')
+    # groceries.add_item('cheese', 500, 'g')
+
+    prices = PriceHandler(groceries)
+    analysis = AnalysisHandler(prices.data, shopping_list=groceries.data)
 
 
-
-    # groceries = slh.get_list('untitled.csv')
-    # groceries.add_item('ham', 300)
     # groceries.remove_item('bread')
     # groceries.display()
     # groceries.save()
@@ -22,11 +23,11 @@ def main():
     print("SLHandler:\n "
           "rootdir:", slh.cwd, "\n lists:", slh.lists, "\n num_lists:", slh.num_lists)
 
-    print("PriceHandler:\n "
-          "data:", prices.data)
+    print("PriceHandler:")
+    print(prices.data)
 
-    print("AnalysisHandler:\n "
-          "data:", analysis.data)
+    print("AnalysisHandler:")
+    print(analysis.data)
 
 
 if __name__ == '__main__':

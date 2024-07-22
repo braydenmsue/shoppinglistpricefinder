@@ -16,14 +16,14 @@ class ShoppingList:
         self.filename = filename
         self.data = data
 
-    def add_item(self, name: str, amount):
+    def add_item(self, name: str, amount: float, unit: str):
         if type(amount) != int and type(amount) != float:
             return None
 
         if name in self.data['name'].values:
             self.data.loc[self.data['name'] == name, 'amount'] += amount
         else:
-            record = {'name': name, 'amount': amount}
+            record = {'name': name, 'amount': amount, 'unit': unit}
             self.data = self.data._append(record, ignore_index=True)
         return 1
 
@@ -71,7 +71,7 @@ class ShoppingListHandler:
         self.lists.append(filename)
         self.num_lists = self.get_num_lists()
 
-        data = pd.DataFrame(columns=['name', 'amount'])
+        data = pd.DataFrame(columns=['name', 'amount', 'unit'])
         data.to_csv(path, index=False)
 
     def get_list(self, filename: str):

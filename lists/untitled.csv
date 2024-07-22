@@ -1,3 +1,4 @@
-name,amount
-bread,500
-milk, 4
+name,amount,unit
+bread,1,kg
+milk,4,l
+cheese,500,g
