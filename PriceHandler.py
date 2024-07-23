@@ -94,7 +94,7 @@ class PriceHandler:
         search_bar_xpath = '//input[@id="search-bar-input"]'
         data = []
 
-        flavour_pattern = re.compile(r'^(flavou?r(ed)?)$', re.IGNORECASE)
+        flavour_pattern = re.compile(r'\bflavou?r(ed)?\b', re.IGNORECASE)
 
         for index, row in self.list.data.iterrows():
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, search_bar_xpath)))
@@ -121,6 +121,7 @@ class PriceHandler:
                     full_price_xpath = './/p[@class="e-vn9fl5"]//span[@class="e-azp9o7"]'   # for items on sale
                     organic_xpath = './/div[@class="e-1gfus46"]//span[@class="e-1hayzc0"]'  # for organic tag
 
+                    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, name_xpath)))
                     name = item.find_element(By.XPATH, name_xpath).text
                     #TODO: add synonyms for each item e.g. bread -> bun(s), sourdough, baguette
 
@@ -134,12 +135,8 @@ class PriceHandler:
 
                             # Split the following text to get the first word after the keyword
                             following_words = following_text.split()
-                            if following_words:
-                                first_word_after_keyword = following_words[0]
-
-                                # Check if the first word after the keyword is any form of "flavour"
-                                if flavour_pattern.match(first_word_after_keyword, re.IGNORECASE):
-                                    continue    # skip item
+                            if following_words and flavour_pattern.match(following_words[0], re.IGNORECASE):
+                                continue    # skip item
 
                             price_div = item.find_element(By.XPATH, price_div_xpath)
                             price_digits = price_div.find_elements(By.XPATH, './/span')
