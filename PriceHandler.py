@@ -138,40 +138,40 @@ class PriceHandler:
                                 first_word_after_keyword = following_words[0]
 
                                 # Check if the first word after the keyword is any form of "flavour"
-                                if re.match(flavour_pattern, first_word_after_keyword, re.IGNORECASE):
+                                if flavour_pattern.match(first_word_after_keyword, re.IGNORECASE):
                                     continue    # skip item
 
-                        price_div = item.find_element(By.XPATH, price_div_xpath)
-                        price_digits = price_div.find_elements(By.XPATH, './/span')
-                        price = format_price(price_digits)
+                            price_div = item.find_element(By.XPATH, price_div_xpath)
+                            price_digits = price_div.find_elements(By.XPATH, './/span')
+                            price = format_price(price_digits)
 
-                        try:
-                            full_price_digits = item.find_element(By.XPATH, full_price_xpath).text
-                            full_price = format_price([full_price_digits])
-                        except NoSuchElementException:
-                            full_price = price
+                            try:
+                                full_price_digits = item.find_element(By.XPATH, full_price_xpath).text
+                                full_price = format_price([full_price_digits])
+                            except NoSuchElementException:
+                                full_price = price
 
-                        try:
-                            amount_str = item.find_element(By.XPATH, amount_xpath).text
-                            amount, unit = to_amount(amount_str)
+                            try:
+                                amount_str = item.find_element(By.XPATH, amount_xpath).text
+                                amount, unit = to_amount(amount_str)
 
-                        except NoSuchElementException:
-                            amount = None
+                            except NoSuchElementException:
+                                amount = None
 
-                        try:
-                            organic_tag = item.find_element(By.XPATH, organic_xpath)
-                            if organic_tag.text == 'Organic':
-                                organic = True
+                            try:
+                                organic_tag = item.find_element(By.XPATH, organic_xpath)
+                                if organic_tag.text == 'Organic':
+                                    organic = True
 
-                        except NoSuchElementException:
-                            organic = False
+                            except NoSuchElementException:
+                                organic = False
 
-                        discount = full_price - price
+                            discount = full_price - price
 
-                        record = [name, price, amount, unit, discount, row['name'], organic]
-                        data.append(record)
+                            record = [name, price, amount, unit, discount, row['name'], organic]
+                            data.append(record)
 
-            result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term', 'organic'])
+                result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term', 'organic'])
 
         driver.quit()
         result.to_csv('prices.csv', index=False)
