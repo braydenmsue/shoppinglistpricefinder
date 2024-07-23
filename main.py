@@ -14,7 +14,7 @@ def output_totals(totals: pd.DataFrame):
             else:
                 output_format += ")"
         elif row['discount'] > 0:
-            output_format += "(ON SALE)"
+            output_format += " (ON SALE)"
         output_format += '\n'
 
         num_orders = int(row['total_amount_ordered'] / row['amount'])
