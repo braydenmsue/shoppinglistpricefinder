@@ -11,19 +11,43 @@ import os
 #         return f'{self.name}: {self.amount}'
 
 
+def convert_row(row):
+    if row['unit'] == 'kg':
+        row['required_amount'] *= 1000
+        row['unit'] = 'g'
+    elif row['unit'] == 'g':
+        pass
+    elif row['unit'] == 'lb':
+        row['required_amount'] *= 453.592
+        row['unit'] = 'g'
+    elif row['unit'] == 'oz':
+        row['required_amount'] *= 28.3495
+        row['unit'] = 'g'
+    elif row['unit'] == 'ml':
+        pass
+    elif row['unit'] == 'l':
+        row['required_amount'] *= 1000
+        row['unit'] = 'ml'
+
+    return row
+
+
 class ShoppingList:
     def __init__(self, filename: str, data: pd.DataFrame):
         self.filename = filename
         self.data = data
+
+    def convert_units(self):
+        self.data = self.data.apply(convert_row, axis=1)
 
     def add_item(self, name: str, amount: float, unit: str):
         if type(amount) != int and type(amount) != float:
             return None
 
         if name in self.data['name'].values:
-            self.data.loc[self.data['name'] == name, 'amount'] += amount
+            self.data.loc[self.data['name'] == name, 'required_amount'] += amount
         else:
-            record = {'name': name, 'amount': amount, 'unit': unit}
+            record = {'name': name, 'required_amount': amount, 'unit': unit}
             self.data = self.data._append(record, ignore_index=True)
         return 1
 
@@ -71,7 +95,7 @@ class ShoppingListHandler:
         self.lists.append(filename)
         self.num_lists = self.get_num_lists()
 
-        data = pd.DataFrame(columns=['name', 'amount', 'unit'])
+        data = pd.DataFrame(columns=['name', 'required_amount', 'unit'])
         data.to_csv(path, index=False)
 
     def get_list(self, filename: str):
