@@ -108,8 +108,6 @@ class PriceHandler:
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, list_container_xpath)))
             list_containers = driver.find_elements(By.XPATH, list_container_xpath)
 
-            df = pd.DataFrame(columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term'])
-
             for item_list in list_containers:
                 items_xpath = './/li//div[@class="e-13udsys"]'
                 items = item_list.find_elements(By.XPATH, items_xpath)
@@ -118,6 +116,7 @@ class PriceHandler:
                     price_div_xpath = './/span[@class="e-1ip314g"]'
                     amount_xpath = './/div[@class="e-zjik7"]//div'
                     full_price_xpath = './/p[@class="e-vn9fl5"]//span[@class="e-azp9o7"]'   # for items on sale
+                    organic_xpath = './/div[@class="e-1gfus46"]//span[@class="e-1hayzc0"]'  # for organic tag
 
                     name = item.find_element(By.XPATH, name_xpath).text
                     #TODO: add synonyms for each item e.g. bread -> bun(s), sourdough, baguette
@@ -141,12 +140,21 @@ class PriceHandler:
                         except NoSuchElementException:
                             amount = None
 
+                        try:
+                            organic_tag = item.find_element(By.XPATH, organic_xpath)
+                            if organic_tag.text == 'Organic':
+                                organic = True
+
+                        except NoSuchElementException:
+                            organic = False
+
                         discount = full_price - price
 
-                        record = [name, price, amount, unit, discount, row['name']]
+                        record = [name, price, amount, unit, discount, row['name'], organic]
                         data.append(record)
 
-            result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term'])
+            result = pd.DataFrame(data, columns=['name', 'price', 'amount', 'unit', 'discount', 'search_term', 'organic'])
 
         driver.quit()
+        result.to_csv('prices.csv', index=False)
         return result
