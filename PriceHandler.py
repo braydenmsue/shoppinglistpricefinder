@@ -94,6 +94,8 @@ class PriceHandler:
         search_bar_xpath = '//input[@id="search-bar-input"]'
         data = []
 
+        flavour_pattern = re.compile(r'^(flavou?r(ed)?)$', re.IGNORECASE)
+
         for index, row in self.list.data.iterrows():
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, search_bar_xpath)))
             search_bar = driver.find_element(By.XPATH, search_bar_xpath)
@@ -110,6 +112,7 @@ class PriceHandler:
 
             for item_list in list_containers:
                 items_xpath = './/li//div[@class="e-13udsys"]'
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, items_xpath)))
                 items = item_list.find_elements(By.XPATH, items_xpath)
                 for item in items:
                     name_xpath = './/div[@class="e-i41pyq"]//h2[@class="e-147kl2c"]'
@@ -120,8 +123,23 @@ class PriceHandler:
 
                     name = item.find_element(By.XPATH, name_xpath).text
                     #TODO: add synonyms for each item e.g. bread -> bun(s), sourdough, baguette
-                    if row['name'].lower() in name.lower():
-                        # print(item.find_element(By.XPATH, name_xpath).text)
+
+                    if keyword_index := name.lower().find(row['name'].lower()):
+                        if keyword_index != -1:
+                            # Calculate the end index of the keyword
+                            keyword_end_index = keyword_index + len(row['name'])
+
+                            # Extract the part of the string following the keyword
+                            following_text = name.lower()[keyword_end_index:].strip()
+
+                            # Split the following text to get the first word after the keyword
+                            following_words = following_text.split()
+                            if following_words:
+                                first_word_after_keyword = following_words[0]
+
+                                # Check if the first word after the keyword is any form of "flavour"
+                                if re.match(flavour_pattern, first_word_after_keyword, re.IGNORECASE):
+                                    continue    # skip item
 
                         price_div = item.find_element(By.XPATH, price_div_xpath)
                         price_digits = price_div.find_elements(By.XPATH, './/span')
