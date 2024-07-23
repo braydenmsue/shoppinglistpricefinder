@@ -1,4 +1,4 @@
-name,amount,unit
+name,required_amount,unit
 bread,1,kg
 milk,4,l
 cheese,500,g
